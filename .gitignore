@@ -1,4 +1,7 @@
-# Local .terraform directories
+providers.tf
+nhl_app/venv/***
+terraform.tfstate
+terraform.tfstate.backup# Local .terraform directories
 .terraform/
 
 # .tfstate files

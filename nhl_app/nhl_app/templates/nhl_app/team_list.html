@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>NHL Teams</title>
+</head>
+<body>
+    <h1>NHL Teams</h1>
+    <div>
+        <a href="?"><button>All</button></a>
+        {% for region in regions %}
+            <a href="?region={{ region }}"><button>{{ region }}</button></a>
+        {% endfor %}
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
+        {% for team in teams %}
+            <div>
+                <img src="{{ team.logo.url }}" alt="{{ team.name }}" width="150">
+                <h3>{{ team.name }}</h3>
+            </div>
+        {% endfor %}
+    </div>
+</body>
+</html>
