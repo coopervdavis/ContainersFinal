@@ -10,14 +10,14 @@ resource "aws_security_group" "rds_sg" {
 }
 
 resource "aws_db_instance" "postgres" {
-  identifier             = "nhl-db"
-  allocated_storage      = 20
-  engine                 = "postgres"
-  engine_version         = "15.4"
+  identifier        = "nhl-db"
+  allocated_storage = 20
+  engine            = "postgres"
+  # engine_version removed so AWS picks the default stable version
   instance_class         = "db.t4g.micro"
   db_name                = "nhldb"
   username               = "dbadmin"
-  password               = "SuperSecretPassword123!" # In production, use AWS Secrets Manager
+  password               = "SuperSecretPassword123!"
   db_subnet_group_name   = module.vpc.database_subnet_group_name
   vpc_security_group_ids = [aws_security_group.rds_sg.id]
   skip_final_snapshot    = true
