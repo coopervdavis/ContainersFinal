@@ -19,5 +19,8 @@ EXPOSE 8000
 # Tell Docker to move into the nested Django project folder
 WORKDIR /app/nhl_app
 
-# Now Gunicorn will be able to see the 'config' folder right next to it!
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "config.wsgi:application"]
+# Tell Docker to move into the nested Django project folder
+WORKDIR /app/nhl_app
+
+# Make migrations, apply them to RDS, then start the server
+CMD ["sh", "-c", "python manage.py makemigrations nhl_app && python manage.py migrate && gunicorn --bind 0.0.0.0:8000 config.wsgi:application"]
