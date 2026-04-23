@@ -17,8 +17,9 @@ resource "aws_s3_bucket_public_access_block" "media_public_access" {
 
 resource "aws_cloudfront_distribution" "cdn" {
   origin {
-    domain_name = aws_s3_bucket.media.bucket_regional_domain_name
-    origin_id   = "S3-${aws_s3_bucket.media.id}"
+    domain_name              = aws_s3_bucket.media.bucket_regional_domain_name
+    origin_id                = "S3-${aws_s3_bucket.media.id}"
+    origin_access_control_id = aws_cloudfront_origin_access_control.oac.id # <-- ADD THIS LINE
   }
 
   enabled = true
@@ -47,6 +48,13 @@ resource "aws_cloudfront_distribution" "cdn" {
   }
 }
 
+resource "aws_cloudfront_origin_access_control" "oac" {
+  name                              = "nhl-oac-${random_id.suffix.hex}"
+  description                       = "Allow CloudFront to access S3"
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
+}
 # Add to the bottom of storage.tf
 
 resource "aws_s3_object" "team_logos" {
@@ -63,7 +71,7 @@ resource "aws_s3_object" "team_logos" {
 
 
 # Allow public read access to the bucket so CloudFront can serve the images
-resource "aws_s3_bucket_policy" "allow_public_read" {
+resource "aws_s3_bucket_policy" "allow_cloudfront_read" {
   bucket = aws_s3_bucket.media.id
 
   policy = jsonencode({
@@ -71,13 +79,15 @@ resource "aws_s3_bucket_policy" "allow_public_read" {
     Statement = [
       {
         Effect    = "Allow"
-        Principal = "*"
+        Principal = { Service = "cloudfront.amazonaws.com" }
         Action    = "s3:GetObject"
         Resource  = "${aws_s3_bucket.media.arn}/*"
+        Condition = {
+          StringEquals = {
+            "AWS:SourceArn" = aws_cloudfront_distribution.cdn.arn
+          }
+        }
       }
     ]
   })
-
-  # Ensure the public access block is removed before trying to apply this policy
-  depends_on = [aws_s3_bucket_public_access_block.media_public_access]
 }

@@ -87,6 +87,7 @@ DATABASES = {
 # AWS S3 and CloudFront Configuration
 AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME', 'your-bucket-name-here')
 AWS_S3_CUSTOM_DOMAIN = os.environ.get('AWS_S3_CUSTOM_DOMAIN', 'your-cloudfront-domain.cloudfront.net')
+AWS_QUERYSTRING_AUTH = False # <-- ADD THIS LINE
 
 # Tell Django to use S3 for media files (like your logos)
 STORAGES = {
