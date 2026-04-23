@@ -23,4 +23,5 @@ WORKDIR /app/nhl_app
 WORKDIR /app/nhl_app
 
 # Make migrations, apply them to RDS, then start the server
-CMD ["sh", "-c", "python manage.py makemigrations nhl_app && python manage.py migrate && gunicorn --bind 0.0.0.0:8000 config.wsgi:application"]
+# Make migrations, apply them, load initial data, then start the server
+CMD ["sh", "-c", "python manage.py makemigrations nhl_app && python manage.py migrate && python load_data.py && gunicorn --bind 0.0.0.0:8000 config.wsgi:application"]
