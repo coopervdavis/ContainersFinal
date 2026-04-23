@@ -9,14 +9,21 @@ resource "aws_security_group" "ecs_tasks_sg" {
     from_port   = 8000
     to_port     = 8000
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # Limit to ALB SG in a stricter setup
+    cidr_blocks = ["0.0.0.0/0"] 
   }
+  
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+}
+
+# New CloudWatch Log Group for your Django container
+resource "aws_cloudwatch_log_group" "ecs_logs" {
+  name              = "/ecs/nhl-app"
+  retention_in_days = 7
 }
 
 resource "aws_ecs_task_definition" "django_app" {
@@ -37,8 +44,17 @@ resource "aws_ecs_task_definition" "django_app" {
     }]
     environment = [
       { name = "DATABASE_URL", value = "postgres://dbadmin:SuperSecretPassword123!@${aws_db_instance.postgres.endpoint}/nhldb" },
-      # Add AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY for S3 uploads if not using task roles
+      { name = "AWS_STORAGE_BUCKET_NAME", value = aws_s3_bucket.media.bucket },
+      { name = "AWS_S3_CUSTOM_DOMAIN", value = aws_cloudfront_distribution.cdn.domain_name }
     ]
+    logConfiguration = {
+      logDriver = "awslogs"
+      options = {
+        "awslogs-group"         = aws_cloudwatch_log_group.ecs_logs.name
+        "awslogs-region"        = "us-east-2"
+        "awslogs-stream-prefix" = "ecs"
+      }
+    }
   }])
 }
 
