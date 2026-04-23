@@ -60,3 +60,24 @@ resource "aws_s3_object" "team_logos" {
   # Ensure the bucket exists before trying to upload
   depends_on = [aws_s3_bucket.media]
 }
+
+
+# Allow public read access to the bucket so CloudFront can serve the images
+resource "aws_s3_bucket_policy" "allow_public_read" {
+  bucket = aws_s3_bucket.media.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect    = "Allow"
+        Principal = "*"
+        Action    = "s3:GetObject"
+        Resource  = "${aws_s3_bucket.media.arn}/*"
+      }
+    ]
+  })
+
+  # Ensure the public access block is removed before trying to apply this policy
+  depends_on = [aws_s3_bucket_public_access_block.media_public_access]
+}
